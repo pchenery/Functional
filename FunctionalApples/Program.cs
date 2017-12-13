@@ -10,6 +10,63 @@ namespace FunctionalApples
     {
         static void Main(string[] args)
         {
+            Apple apple = new Apple();
+            var test = apple.PickApples().Take(10000).Count(a => a.Poisoned == true);
+            var poisoned = apple.PickApples().Take(10000).Where(a => a.Colour == "Red").Count();
+
+            Console.WriteLine(apple.HowManyArePoisoned());
+            Console.WriteLine(test);
+            //Console.WriteLine(result.Count(a => a.Poisoned = true));
+
+            Console.ReadLine();
+        }
+        class Apple
+        {
+            public string Colour { get; set; }
+            public bool Poisoned { get; set; }
+
+            public override string ToString()
+            {
+                return $"{Colour} apple{(Poisoned ? " (poisoned!)" : "")}";
+            }
+
+            public int HowManyArePoisoned()
+            {
+                return PickApples().Take(10000).Count(a => a.Poisoned == true);
+            }
+
+            public IEnumerable<Apple> PickApples()
+            {
+                int colourIndex = 1;
+                int poisonIndex = 7;
+
+                while (true)
+                {
+                    yield return new Apple
+                    {
+                        Colour = GetColour(colourIndex),
+                        Poisoned = poisonIndex % 41 == 0
+                    };
+
+                    colourIndex += 5;
+                    poisonIndex += 37;
+                }
+            }
+
+            private string GetColour(int colourIndex)
+            {
+                if (colourIndex % 13 == 0 || colourIndex % 29 == 0)
+                {
+                    return "Green";
+                }
+
+                if (colourIndex % 11 == 0 || colourIndex % 19 == 0)
+                {
+                    return "Yellow";
+                }
+
+                return "Red";
+            }
         }
     }
 }
