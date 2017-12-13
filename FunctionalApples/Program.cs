@@ -11,12 +11,22 @@ namespace FunctionalApples
         static void Main(string[] args)
         {
             Apple apple = new Apple();
-            var test = apple.PickApples().Take(10000).Count(a => a.Poisoned == true);
-            var poisoned = apple.PickApples().Take(10000).Where(a => a.Colour == "Red").Count();
+            Apple apple2 = new Apple();
+            
+            var Apples = apple.PickApples().Take(10000).
+                Where(a => a.Colour == "Red").
+                Where(a => a.Poisoned == true).
+                Zip(apple.PickApples().Take(10000).Skip(1).
+                Where(a => a.Colour == "Red").
+                Where(a => a.Poisoned == true)
+                , (curr, prev) => curr.Colour == prev.Colour).
+                Max();
+
 
             Console.WriteLine(apple.HowManyArePoisoned());
-            Console.WriteLine(test);
-            //Console.WriteLine(result.Count(a => a.Poisoned = true));
+            Console.WriteLine(apple.SecondMostPoisonousColour());
+            Console.WriteLine(Apples);
+            //Console.WriteLine(test);
 
             Console.ReadLine();
         }
@@ -32,7 +42,18 @@ namespace FunctionalApples
 
             public int HowManyArePoisoned()
             {
-                return PickApples().Take(10000).Count(a => a.Poisoned == true);
+                return PickApples().
+                       Take(10000).
+                       Count(a => a.Poisoned == true);
+            }
+
+            public string SecondMostPoisonousColour()
+            {
+                return PickApples().Take(10000).
+                       Where(a => a.Poisoned == true).
+                       GroupBy(a => a.Colour).
+                       OrderByDescending(g => g.Count()).
+                       ElementAt(1).Key;
             }
 
             public IEnumerable<Apple> PickApples()
