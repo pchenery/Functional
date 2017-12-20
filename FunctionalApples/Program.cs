@@ -11,22 +11,11 @@ namespace FunctionalApples
         static void Main(string[] args)
         {
             Apple apple = new Apple();
-            Apple apple2 = new Apple();
-            
-            var Apples = apple.PickApples().Take(10000).
-                Where(a => a.Colour == "Red").
-                Where(a => a.Poisoned == true).
-                Zip(apple.PickApples().Take(10000).Skip(1).
-                Where(a => a.Colour == "Red").
-                Where(a => a.Poisoned == true)
-                , (curr, prev) => curr.Colour == prev.Colour).
-                Max();
-
 
             Console.WriteLine(apple.HowManyArePoisoned());
             Console.WriteLine(apple.SecondMostPoisonousColour());
-            Console.WriteLine(Apples);
-            //Console.WriteLine(test);
+            Console.WriteLine(apple.MaxRunRedNonPoisoned());
+            Console.WriteLine(apple.GreenFollowedbyGreen());
 
             Console.ReadLine();
         }
@@ -42,18 +31,38 @@ namespace FunctionalApples
 
             public int HowManyArePoisoned()
             {
-                return PickApples().
-                       Take(10000).
-                       Count(a => a.Poisoned == true);
+                return PickApples()
+                       .Take(10000)
+                       .Count(a => a.Poisoned);
             }
 
             public string SecondMostPoisonousColour()
             {
-                return PickApples().Take(10000).
-                       Where(a => a.Poisoned == true).
-                       GroupBy(a => a.Colour).
-                       OrderByDescending(g => g.Count()).
-                       ElementAt(1).Key;
+                return PickApples().Take(10000)
+                       .Where(a => a.Poisoned)
+                       .GroupBy(a => a.Colour)
+                       .OrderByDescending(g => g.Count())
+                       .ElementAt(1).Key;
+            }
+
+            public int MaxRunRedNonPoisoned()
+            {
+                return PickApples()
+                        .Take(10000)
+                        .Aggregate(Tuple.Create(0, 0),
+                            (acc, app) =>
+                            (app.Colour == "Red" && !app.Poisoned)
+                            ? Tuple.Create(acc.Item1 + 1, Math.Max(acc.Item1 + 1, acc.Item2))
+                            : Tuple.Create(0, acc.Item2))
+                        .Item2;
+            }
+
+            public int GreenFollowedbyGreen()
+            {
+                return PickApples().Take(10000)
+                        .Zip(PickApples()
+                        .Skip(1), Tuple.Create)
+                        .Count(pair => pair.Item1.Colour == "Green" && pair.Item2.Colour == "Green");
             }
 
             public IEnumerable<Apple> PickApples()
